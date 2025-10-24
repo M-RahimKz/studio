@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Paperclip, Text, Loader } from "lucide-react";
-import { useFormState, useFormStatus } from "react-dom";
-import { useEffect, useRef } from "react";
+import { useFormStatus } from "react-dom";
+import { useEffect, useRef, useActionState } from "react";
 import { feedText, feedDocument } from "@/app/feed-actions";
 
 const initialState = {
@@ -29,8 +29,8 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 export function DataFeedForms() {
   const { toast } = useToast();
   
-  const [textState, textFormAction] = useFormState(feedText, initialState);
-  const [docState, docFormAction] = useFormState(feedDocument, initialState);
+  const [textState, textFormAction] = useActionState(feedText, initialState);
+  const [docState, docFormAction] = useActionState(feedDocument, initialState);
   
   const textFormRef = useRef<HTMLFormElement>(null);
   const docFormRef = useRef<HTMLFormElement>(null);

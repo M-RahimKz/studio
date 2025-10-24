@@ -1,8 +1,8 @@
 "use client";
 
 import { Bot, Loader, Send, User, BrainCircuit, MessageSquareText } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useEffect, useRef, useState, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 
 import { getAiResponse } from "@/app/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -38,7 +38,7 @@ function SubmitButton() {
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [useCustomKnowledge, setUseCustomKnowledge] = useState(true);
-  const [state, formAction] = useFormState(getAiResponse, initialState);
+  const [state, formAction] = useActionState(getAiResponse, initialState);
 
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
