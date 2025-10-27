@@ -3,38 +3,64 @@
 
 import { revalidatePath } from "next/cache";
 
+const API_BASE_URL = "http://localhost:8081/api/rag-data";
+
 /**
- * A dummy API function to simulate feeding text data to a knowledge base.
+ * Feeds text data to the knowledge base via API.
  * @param textData The text data to feed.
- * @returns A promise that resolves with a success message.
+ * @returns A promise that resolves with the API response.
  */
-async function dummyTextFeedAPI(textData: string): Promise<{ success: boolean, message: string }> {
-  console.log("--- Calling Dummy Text Feed API ---");
-  console.log("Data:", textData.substring(0, 100) + "...");
-  
-  // Simulate a network request
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  console.log("--- Dummy Text Feed API successful ---");
-  return { success: true, message: "Text data processed by dummy API." };
+async function textFeedAPI(textData: string): Promise<{ success: boolean, message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed-text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: textData }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to feed text data' }));
+      return { success: false, message: errorData.message || `HTTP error! status: ${response.status}` };
+    }
+
+    const result = await response.json();
+    return { success: true, message: result.message || "Text data fed successfully." };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    console.error("Text Feed API Error:", error);
+    return { success: false, message: errorMessage };
+  }
 }
 
 /**
- * A dummy API function to simulate feeding a document to a knowledge base.
- * @param fileName The name of the document file.
- * @param fileContent The content of the document file.
- * @returns A promise that resolves with a success message.
+ * Feeds a document to the knowledge base via API.
+ * @param documentFile The document file to feed.
+ * @returns A promise that resolves with the API response.
  */
-async function dummyDocumentFeedAPI(fileName: string, fileContent: string): Promise<{ success: boolean, message: string }> {
-  console.log("--- Calling Dummy Document Feed API ---");
-  console.log("File Name:", fileName);
-  console.log("Content:", fileContent.substring(0, 200) + "...");
+async function documentFeedAPI(documentFile: File): Promise<{ success: boolean, message: string }> {
+  try {
+    const formData = new FormData();
+    formData.append('file', documentFile);
 
-  // Simulate a network request
-  await new Promise(resolve => setTimeout(resolve, 2000));
+    const response = await fetch(`${API_BASE_URL}/feed-file`, {
+      method: 'POST',
+      body: formData,
+    });
 
-  console.log("--- Dummy Document Feed API successful ---");
-  return { success: true, message: "Document processed by dummy API." };
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to feed document' }));
+      return { success: false, message: errorData.message || `HTTP error! status: ${response.status}` };
+    }
+    
+    const result = await response.json();
+    return { success: true, message: result.message || "Document fed successfully." };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    console.error("Document Feed API Error:", error);
+    return { success: false, message: errorMessage };
+  }
 }
 
 
@@ -49,15 +75,14 @@ export async function feedText(
             return { error: "Text data is required." };
         }
 
-        // --- Your API call goes here ---
-        const apiResponse = await dummyTextFeedAPI(textData);
+        const apiResponse = await textFeedAPI(textData);
 
         if (!apiResponse.success) {
             return { error: `API Error: ${apiResponse.message}` };
         }
 
         revalidatePath("/");
-        return { message: "Text data has been fed to the knowledge base." };
+        return { message: apiResponse.message };
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
         console.error(e);
@@ -76,17 +101,14 @@ export async function feedDocument(
             return { error: "Document file is required." };
         }
 
-        const fileContent = await documentFile.text();
-
-        // --- Your API call goes here ---
-        const apiResponse = await dummyDocumentFeedAPI(documentFile.name, fileContent);
+        const apiResponse = await documentFeedAPI(documentFile);
 
         if (!apiResponse.success) {
             return { error: `API Error: ${apiResponse.message}` };
         }
 
         revalidatePath("/");
-        return { message: "Document has been fed to the knowledge base." };
+        return { message: apiResponse.message };
 
     } catch (e) {
         const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
