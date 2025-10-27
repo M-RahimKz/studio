@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 
-const API_BASE_URL = "http://localhost:8081/api/rag-data";
+const API_BASE_URL = "http://host.docker.internal:8081/api/rag-data";
 
 /**
  * Feeds text data to the knowledge base via API.
