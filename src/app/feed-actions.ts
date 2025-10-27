@@ -15,18 +15,18 @@ async function textFeedAPI(textData: string): Promise<{ success: boolean, messag
     const response = await fetch(`${API_BASE_URL}/feed-text`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
-      body: JSON.stringify({ text: textData }),
+      body: textData,
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to feed text data' }));
-      return { success: false, message: errorData.message || `HTTP error! status: ${response.status}` };
+      const errorText = await response.text().catch(() => 'Failed to read error response');
+      return { success: false, message: errorText || `HTTP error! status: ${response.status}` };
     }
 
-    const result = await response.json();
-    return { success: true, message: result.message || "Text data fed successfully." };
+    const resultText = await response.text();
+    return { success: true, message: resultText || "Text data fed successfully." };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     console.error("Text Feed API Error:", error);
@@ -50,12 +50,12 @@ async function documentFeedAPI(documentFile: File): Promise<{ success: boolean, 
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to feed document' }));
-      return { success: false, message: errorData.message || `HTTP error! status: ${response.status}` };
+      const errorText = await response.text().catch(() => 'Failed to read error response');
+      return { success: false, message: errorText || `HTTP error! status: ${response.status}` };
     }
     
-    const result = await response.json();
-    return { success: true, message: result.message || "Document fed successfully." };
+    const resultText = await response.text();
+    return { success: true, message: resultText || "Document fed successfully." };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     console.error("Document Feed API Error:", error);
