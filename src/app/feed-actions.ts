@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 
-const API_BASE_URL = "http://host.docker.internal:8081/api/rag-data";
+const API_BASE_URL = "http://localhost:8081/api/rag-data";
 
 /**
  * Feeds text data to the knowledge base via API.
@@ -28,8 +28,8 @@ async function textFeedAPI(textData: string): Promise<{ success: boolean, messag
     const resultText = await response.text();
     return { success: true, message: resultText || "Text data fed successfully." };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     console.error("Text Feed API Error:", error);
+    const errorMessage = error instanceof Error ? `${error.name}: ${error.message}` : "An unknown error occurred.";
     return { success: false, message: errorMessage };
   }
 }
@@ -57,8 +57,8 @@ async function documentFeedAPI(documentFile: File): Promise<{ success: boolean, 
     const resultText = await response.text();
     return { success: true, message: resultText || "Document fed successfully." };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     console.error("Document Feed API Error:", error);
+    const errorMessage = error instanceof Error ? `${error.name}: ${error.message}` : "An unknown error occurred.";
     return { success: false, message: errorMessage };
   }
 }
@@ -116,4 +116,3 @@ export async function feedDocument(
         return { error: `Failed to feed document: ${errorMessage}` };
     }
 }
-
