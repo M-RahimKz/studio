@@ -1,30 +1,60 @@
 "use server";
 
-import { retrieveData, type RetrieveDataInput } from "@/ai/flows/retrieve-data-from-knowledge-base";
+type RagSearchInput = {
+  sessionId: string;
+  prompt: string;
+  useModelKnowledge: boolean;
+};
+
+async function ragSearchAPI(input: RagSearchInput): Promise<{ response: string } | { error: string }> {
+  try {
+    const response = await fetch("http://localhost:8081/api/rag-search", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Failed to read error response');
+        // Assuming the backend sends back a plain text error
+        return { error: errorText || `API Error: ${response.status}` };
+    }
+    
+    // Assuming the backend sends back plain text response for the answer
+    const responseText = await response.text();
+    return { response: responseText };
+
+  } catch (error) {
+    console.error("RAG Search API Error:", error);
+    const errorMessage = error instanceof Error ? `${error.name}: ${error.message}` : "An unknown error occurred.";
+    return { error: errorMessage };
+  }
+}
+
 
 export async function getAiResponse(
   prevState: any,
   formData: FormData
 ): Promise<{ response: string } | { error: string }> {
-  try {
-    const query = formData.get("query") as string;
-    const useCustomKnowledge = formData.get("useCustomKnowledge") === "true";
+  const query = formData.get("query") as string;
+  const useCustomKnowledge = formData.get("useCustomKnowledge") === "true";
+  const sessionId = formData.get("sessionId") as string;
 
-    if (!query) {
-      return { error: "Query is required." };
-    }
-    
-    const input: RetrieveDataInput = {
-        query,
-        useCustomKnowledgeBase: useCustomKnowledge
-    }
-
-    const result = await retrieveData(input);
-    return { response: result.response };
-
-  } catch (e) {
-    const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-    console.error(e);
-    return { error: `Failed to get AI response: ${errorMessage}` };
+  if (!query) {
+    return { error: "Query is required." };
   }
+  if (!sessionId) {
+    return { error: "Session ID is required." };
+  }
+  
+  const input: RagSearchInput = {
+      sessionId,
+      prompt: query,
+      useModelKnowledge: useCustomKnowledge
+  }
+
+  const result = await ragSearchAPI(input);
+  return result;
 }

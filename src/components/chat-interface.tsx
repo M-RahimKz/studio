@@ -38,10 +38,16 @@ function SubmitButton() {
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [useCustomKnowledge, setUseCustomKnowledge] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [state, formAction] = useActionState(getAiResponse, initialState);
 
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Generate a unique session ID on the client side when the component mounts
+    setSessionId(`user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+  }, []);
 
   useEffect(() => {
     if (state.error) {
@@ -68,7 +74,7 @@ export function ChatInterface() {
 
   const handleFormSubmit = (formData: FormData) => {
     const query = formData.get("query") as string;
-    if (query?.trim()) {
+    if (query?.trim() && sessionId) {
       setMessages((prev) => [...prev, { role: "user", content: query }]);
       formAction(formData);
       formRef.current?.reset();
@@ -178,6 +184,7 @@ export function ChatInterface() {
             name="useCustomKnowledge"
             value={String(useCustomKnowledge)}
           />
+          {sessionId && <input type="hidden" name="sessionId" value={sessionId} />}
           <SubmitButton />
         </form>
       </div>
