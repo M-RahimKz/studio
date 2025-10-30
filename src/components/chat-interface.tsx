@@ -56,16 +56,18 @@ export function ChatInterface() {
         title: "Error",
         description: state.error,
       });
-      // Do not clear error here to allow for re-renders
     }
 
-    if (state.response && !isPending && messages[messages.length-1]?.role !== 'bot') {
-       setMessages((prev) => [
-        ...prev,
-        { role: "bot", content: state.response },
-      ]);
+    if (state.response && !isPending) {
+      // Check if the last message is from the user to avoid adding duplicate bot responses
+      if (messages.length > 0 && messages[messages.length - 1].role === 'user') {
+        setMessages((prev) => [
+          ...prev,
+          { role: "bot", content: state.response },
+        ]);
+      }
     }
-  }, [state, isPending, messages]);
+  }, [state, isPending]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
