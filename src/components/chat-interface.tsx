@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { SidebarTrigger } from "./ui/sidebar";
 
 type Message = {
@@ -39,7 +39,7 @@ export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [useCustomKnowledge, setUseCustomKnowledge] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [state, formAction] = useActionState(getAiResponse, initialState);
+  const [state, formAction, isPending] = useActionState(getAiResponse, initialState);
 
   const formRef = useRef<HTMLFormElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -50,23 +50,22 @@ export function ChatInterface() {
   }, []);
 
   useEffect(() => {
-    if (state.error) {
+    if (state.error && !isPending) {
       toast({
         variant: "destructive",
         title: "Error",
         description: state.error,
       });
-      state.error = ""; // Clear error
+      // Do not clear error here to allow for re-renders
     }
 
-    if (state.response) {
-      setMessages((prev) => [
+    if (state.response && !isPending && messages[messages.length-1]?.role !== 'bot') {
+       setMessages((prev) => [
         ...prev,
         { role: "bot", content: state.response },
       ]);
-      state.response = ""; // Clear response to avoid re-adding
     }
-  }, [state, state.error, state.response]);
+  }, [state, isPending, messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

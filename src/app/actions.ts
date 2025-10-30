@@ -50,7 +50,7 @@ export async function getAiResponse(
   const input: RagSearchInput = {
       sessionId,
       prompt: query,
-      useModelKnowledge: useCustomKnowledge
+      useModelKnowledge: !useCustomKnowledge // In UI it's "Use Custom Knowledge", in API it's useModelKnowledge. They are opposites.
   }
 
   const result = await ragSearchAPI(input);
