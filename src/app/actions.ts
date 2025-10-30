@@ -16,20 +16,13 @@ async function ragSearchAPI(input: RagSearchInput): Promise<{ response: string }
       body: JSON.stringify(input),
     });
 
+    const responseText = await response.text();
+    
     if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Failed to read error response');
-        return { error: errorText || `API Error: ${response.status}` };
+        return { error: responseText || `API Error: ${response.status}` };
     }
     
-    // The API is expected to return a JSON object with a 'response' field.
-    const responseJson = await response.json();
-
-    if (typeof responseJson.response === 'string') {
-        return { response: responseJson.response };
-    } else {
-        // If the 'response' field is missing or not a string, return an error.
-        return { error: "Invalid response format from API." };
-    }
+    return { response: responseText };
 
   } catch (error) {
     console.error("RAG Search API Error:", error);
