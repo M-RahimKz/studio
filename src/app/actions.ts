@@ -18,13 +18,18 @@ async function ragSearchAPI(input: RagSearchInput): Promise<{ response: string }
 
     if (!response.ok) {
         const errorText = await response.text().catch(() => 'Failed to read error response');
-        // Assuming the backend sends back a plain text error
         return { error: errorText || `API Error: ${response.status}` };
     }
     
-    // Assuming the backend sends back plain text response for the answer
-    const responseText = await response.text();
-    return { response: responseText };
+    // The API is expected to return a JSON object with a 'response' field.
+    const responseJson = await response.json();
+
+    if (typeof responseJson.response === 'string') {
+        return { response: responseJson.response };
+    } else {
+        // If the 'response' field is missing or not a string, return an error.
+        return { error: "Invalid response format from API." };
+    }
 
   } catch (error) {
     console.error("RAG Search API Error:", error);
