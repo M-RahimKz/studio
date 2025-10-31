@@ -1,7 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Increasing body size limit for server actions to 4MB
   serverActions: {
     bodySizeLimit: '4mb',
   },
