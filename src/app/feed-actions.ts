@@ -116,9 +116,13 @@ export async function feedDocument(
         revalidatePath("/");
         return { message: apiResponse.message };
 
-    } catch (e) {
+    } catch (e: any) {
         const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
         console.error(e);
+        // Check for Next.js specific body size error
+        if (e.code === 'FST_ERR_CTP_BODY_TOO_LARGE' || (e.message && e.message.includes("body exceeded"))) {
+             return { error: 'File size exceeds the 4MB limit. Please upload a smaller file.' };
+        }
         return { error: `Failed to feed document: ${errorMessage}` };
     }
 }
