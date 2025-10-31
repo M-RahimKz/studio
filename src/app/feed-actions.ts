@@ -51,6 +51,7 @@ async function documentFeedAPI(documentFile: File): Promise<{ success: boolean, 
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Failed to read error response');
+      console.error(`Document Feed API Error (${response.status}):`, errorText);
       return { success: false, message: errorText || `HTTP error! status: ${response.status}` };
     }
     
