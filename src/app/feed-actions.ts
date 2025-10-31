@@ -41,8 +41,13 @@ async function textFeedAPI(textData: string): Promise<{ success: boolean, messag
  */
 async function documentFeedAPI(documentFile: File): Promise<{ success: boolean, message: string }> {
   try {
+    // Read the file into a buffer and create a Blob
+    const fileBuffer = await documentFile.arrayBuffer();
+    const blob = new Blob([fileBuffer], { type: documentFile.type });
+
     const formData = new FormData();
-    formData.append('file', documentFile);
+    // Use the blob to send the file, preserving the original filename
+    formData.append('file', blob, documentFile.name);
 
     const response = await fetch(`${API_BASE_URL}/feed-file`, {
       method: 'POST',
