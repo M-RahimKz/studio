@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Paperclip, Text, Loader } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { feedText, feedDocument } from "@/app/feed-actions";
 
 const initialState = {
@@ -26,12 +26,16 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   );
 }
 
+const TEXT_CHAR_LIMIT = 1200;
+
 export function DataFeedForms() {
   const { toast } = useToast();
   
   const [textState, textFormAction] = useActionState(feedText, initialState);
   const [docState, docFormAction] = useActionState(feedDocument, initialState);
   
+  const [textLength, setTextLength] = useState(0);
+
   const textFormRef = useRef<HTMLFormElement>(null);
   const docFormRef = useRef<HTMLFormElement>(null);
 
@@ -42,6 +46,7 @@ export function DataFeedForms() {
         description: textState.message,
       });
       textFormRef.current?.reset();
+      setTextLength(0);
       textState.message = "";
     }
     if (textState.error) {
@@ -97,8 +102,13 @@ export function DataFeedForms() {
                 placeholder="Paste your text data here..."
                 rows={12}
                 required
+                maxLength={TEXT_CHAR_LIMIT}
+                onChange={(e) => setTextLength(e.target.value.length)}
                 className="bg-background"
               />
+              <p className="text-xs text-muted-foreground text-right">
+                {textLength}/{TEXT_CHAR_LIMIT}
+              </p>
             </div>
             <SubmitButton>Feed Text</SubmitButton>
           </form>
