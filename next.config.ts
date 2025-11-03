@@ -1,9 +1,11 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  // Increasing body size limit for server actions to 4MB
-  serverActions: {
-    bodySizeLimit: '4mb',
+  experimental: {
+    // Increasing body size limit for server actions to 4MB
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
   },
   typescript: {
     ignoreBuildErrors: true,
